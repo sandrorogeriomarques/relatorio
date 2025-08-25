@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório Clientes Mottu</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px 0;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.8em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+        
+        .legend-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .legend-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        
+        .legend-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .legend-item strong {
+            color: #667eea;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .chart-container:hover {
+            transform: translateY(-5px);
+        }
+        
+        .chart-container h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.3em;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            margin-top: 30px;
+            overflow-x: auto;
+        }
+        
+        .table-container h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 10px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        tr:hover {
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .volume-alto {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        
+        .volume-medio {
+            background: #fff3cd;
+            color: #856404;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        
+        .volume-baixo {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        
+        .tips-section {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 30px;
+            color: #2c3e50;
+        }
+        
+        .tips-section h3 {
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .tips-list {
+            list-style: none;
+        }
+        
+        .tips-list li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .tips-list li:before {
+            content: "💡";
+            position: absolute;
+            left: 0;
+        }
+        
+        .disclaimer {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .disclaimer strong {
+            color: #856404;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .legend-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏍️ Relatório Clientes Mottu</h1>
+            <p>Análise de volume de pedidos e indicadores de performance</p>
+        </div>
+        
+        <div class="legend-section">
+            <h3>📊 Legenda das Colunas</h3>
+            <div class="legend-grid">
+                <div class="legend-item">
+                    <strong>Vol. pedidos Mottu:</strong> Volume de pedidos solicitados especificamente pela Mottu
+                </div>
+                <div class="legend-item">
+                    <strong>Vol. pedidos Geral:</strong> Volume geral de pedidos da loja (todos os canais)
+                </div>
+                <div class="legend-item">
+                    <strong>IDS (Índice de Chatisse):</strong> Medição que indica o nível de dificuldade operacional. Quanto mais baixo, melhor para operações
+                </div>
+                <div class="legend-item">
+                    <strong>🤷‍♂️:</strong> Informação não disponível no momento da coleta
+                </div>
+            </div>
+        </div>
+        
+        <div class="dashboard">
+            <div class="chart-container">
+                <h3>📈 Distribuição Volume Pedidos Mottu</h3>
+                <div class="chart-wrapper">
+                    <canvas id="volumeMottuChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3>🔄 Comparativo Volume Mottu vs Geral</h3>
+                <div class="chart-wrapper">
+                    <canvas id="comparativoChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3>📊 Índice IDS por Estabelecimento</h3>
+                <div class="chart-wrapper">
+                    <canvas id="idsChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3>🎯 Estabelecimentos Atendidos M&T Loog</h3>
+                <div class="chart-wrapper">
+                    <canvas id="atendidosChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <h3>📋 Dados Detalhados - Ordenados por Volume Mottu</h3>
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th>Estabelecimento</th>
+                        <th>Endereço</th>
+                        <th>Vol. Pedidos Mottu</th>
+                        <th>Vol. Pedidos Geral</th>
+                        <th>Outros Apps</th>
+                        <th>Atendida M&T Loog</th>
+                        <th>IDS</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="tips-section">
+            <h3>💡 Dicas Importantes</h3>
+            <ul class="tips-list">
+                <li>Os dados estão ordenados pelo volume de pedidos solicitados à Mottu</li>
+                <li>Antes de fechar parceria, considere o IDS - quanto mais alto, mais difícil encontrar motoboys</li>
+                <li>Estabelecimentos com volume "Alto" na Mottu são prioridades estratégicas</li>
+                <li>Monitore estabelecimentos já atendidos pela M&T Loog para oportunidades</li>
+                <li>IDS baixo (próximo a 0) indica melhor operacionalidade</li>
+            </ul>
+            
+            <div class="disclaimer">
+                <strong>⚠️ Disclaimer:</strong> Os dados divulgados não refletem a real situação dos estabelecimentos, mas sim a percepção de motoboys atuando em campo.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados dos estabelecimentos
+        const estabelecimentos = [
+            {nome: "Kokei Comida Japonesa", endereco: "Travessa Luthero, 12 - Alto da Glória, Curitiba - PR, 80030-150", volMottu: "Alto", volGeral: "Médio", outrosApps: "🤷‍♂️", atendida: "🤷‍♂️", ids: "0"},
+            {nome: "Que tal Pastel?", endereco: "Av. João Gualberto, 802 - Sala 3 - Alto da Glória, Curitiba - PR, 80030-000", volMottu: "Alto", volGeral: "Médio", outrosApps: "🤷‍♂️", atendida: "🤷‍♂️", ids: "0"},
+            {nome: "Tradicional Curitiba Bigorrilho/Ecoville - Bolos, Tortas e Sobremesas", endereco: "R. Padre Agostinho, 2772 - Bigorrilho, Curitiba - PR, 80710-000", volMottu: "Alto", volGeral: "Médio", outrosApps: "Ifood", atendida: "🤷‍♂️", ids: "0"},
+            {nome: "Back Wash", endereco: "XV novembro, Muller, XV Chafaiz, Paladium... Escritório Logistico Galeria inácio Lustosa", volMottu: "Alto", volGeral: "Alto", outrosApps: "Ifood, Uber, 99", atendida: "🤷‍♂️", ids: "0,6"},
+            {nome: "The Best Açaí", endereco: "Fazendinha, Hauer, Sítio Cercado e ", volMottu: "Alto", volGeral: "Alto", outrosApps: "Ifood, Uber, 99", atendida: "🤷‍♂️", ids: "0,6"},
+            {nome: "Cobasi", endereco: "Pç Rui Barbosa, Gen. Mário Tourinho, Sen. salgado Filho, Linha Verde,", volMottu: "Alto", volGeral: "Alto", outrosApps: "Ifood, Uber, 99", atendida: "🤷‍♂️", ids: "0,6"},
+            {nome: "Coco Bambu", endereco: "Shopping Crystal", volMottu: "Alto", volGeral: "Alto", outrosApps: "Passou Mottu, Passou NoRapido, 🤷‍♂️", atendida: "🤷‍♂️", ids: "0,6"},
+            {nome: "Bruno Bolos", endereco: "Av. Sete de Setembro, 4316 - Batel, Curitiba - PR, 80250-085", volMottu: "Médio", volGeral: "Baixo", outrosApps: "Ifood", atendida: "🤷‍♂️", ids: "0,9"},
+            {nome: "Restaurante Rabo de Peixe", endereco: "Av. Pres. Getúlio Vargas, 1939 - Água Verde, Curitiba - PR, 80250-180", volMottu: "Médio", volGeral: "Médio", outrosApps: "Ifood", atendida: "🤷‍♂️", ids: "0,7"},
+            {nome: "Romanvs Pizzaria", endereco: "Rua São Sebastião, 575 - Ahú, Curitiba - PR, 80540-050", volMottu: "Médio", volGeral: "Baixo", outrosApps: "Ifood/ Replay", atendida: "🤷‍♂️", ids: "0,6"},
+            {nome: "Cantina do délio Itupava", endereco: "Você já sabe", volMottu: "Médio", volGeral: "Alto", outrosApps: "Ifood", atendida: "SIM", ids: "0,7"},
+            {nome: "Superfood", endereco: "R. Paulo Gorski, 861 - loja 07 - Mossunguê, Curitiba - PR, 81200-000", volMottu: "Médio", volGeral: "Médio", outrosApps: "Ifood", atendida: "SIM", ids: "0,7"},
+            {nome: "Pizza no Divã", endereco: "R. Atílio Bório, 1398 - Cristo Rei, Curitiba - PR, 80045-180", volMottu: "Baixo", volGeral: "Baixo", outrosApps: "Ifood", atendida: "🤷‍♂️", ids: "0,7"},
+            {nome: "Rec's Sub Sandwiches", endereco: "R. Atílio Bório, 1418 - Alto da XV, Curitiba - PR, 80045-330", volMottu: "Baixo", volGeral: "Baixo", outrosApps: "Ifood", atendida: "🤷‍♂️", ids: "0,8"},
+            {nome: "Mary Ann Apple Factory", endereco: "R. Vieira dos Santos, 158 - Centro Cívico, Curitiba - PR, 80540-310", volMottu: "Baixo", volGeral: "Baixo", outrosApps: "🤷‍♂️", atendida: "🤷‍♂️", ids: "🤷‍♂️"},
+            {nome: "Chico Queijos Artesanais", endereco: "R. Atílio Bório, 1531 - Cristo Rei, Curitiba - PR, 80040-132", volMottu: "Baixo", volGeral: "Baixo", outrosApps: "Ifood", atendida: "🤷‍♂️", ids: "🤷‍♂️"},
+            {nome: "Moka Clube - Casa Juvevê", endereco: "Rua Barão dos Campos Gerais, 372 - Juvevê, Curitiba - PR, 80030-400", volMottu: "Baixo", volGeral: "Baixo", outrosApps: "Ifood", atendida: "🤷‍♂️", ids: "🤷‍♂️"}
+        ];
+
+        // Função para formatar volume com classe CSS
+        function formatarVolume(volume) {
+            const classe = `volume-${volume.toLowerCase()}`;
+            return `<span class="${classe}">${volume}</span>`;
+        }
+
+        // Preencher tabela
+        function preencherTabela() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            estabelecimentos.forEach(est => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td><strong>${est.nome}</strong></td>
+                    <td>${est.endereco}</td>
+                    <td>${formatarVolume(est.volMottu)}</td>
+                    <td>${formatarVolume(est.volGeral)}</td>
+                    <td>${est.outrosApps}</td>
+                    <td>${est.atendida}</td>
+                    <td>${est.ids}</td>
+                `;
+            });
+        }
+
+        // Gráfico de Volume Mottu
+        function criarGraficoVolumeMottu() {
+            const ctx = document.getElementById('volumeMottuChart').getContext('2d');
+            const volumes = estabelecimentos.reduce((acc, est) => {
+                acc[est.volMottu] = (acc[est.volMottu] || 0) + 1;
+                return acc;
+            }, {});
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(volumes),
+                    datasets: [{
+                        data: Object.values(volumes),
+                        backgroundColor: ['#e74c3c', '#f39c12', '#27ae60'],
+                        borderWidth: 3,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Gráfico Comparativo
+        function criarGraficoComparativo() {
+            const ctx = document.getElementById('comparativoChart').getContext('2d');
+            const labels = estabelecimentos.map(est => est.nome.length > 15 ? est.nome.substring(0, 15) + '...' : est.nome);
+            const volumeMapping = {'Alto': 3, 'Médio': 2, 'Baixo': 1};
+            
+            const dataMottu = estabelecimentos.map(est => volumeMapping[est.volMottu] || 0);
+            const dataGeral = estabelecimentos.map(est => volumeMapping[est.volGeral] || 0);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Volume Mottu',
+                        data: dataMottu,
+                        backgroundColor: '#667eea',
+                        borderRadius: 5
+                    }, {
+                        label: 'Volume Geral',
+                        data: dataGeral,
+                        backgroundColor: '#764ba2',
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 3,
+                            ticks: {
+                                callback: function(value) {
+                                    return ['', 'Baixo', 'Médio', 'Alto'][value] || '';
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 45
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Gráfico IDS
+        function criarGraficoIDS() {
+            const ctx = document.getElementById('idsChart').getContext('2d');
+            const estabelecimentosComIDS = estabelecimentos.filter(est => est.ids !== '🤷‍♂️');
+            const labels = estabelecimentosComIDS.map(est => est.nome.length > 12 ? est.nome.substring(0, 12) + '...' : est.nome);
+            const idsData = estabelecimentosComIDS.map(est => parseFloat(est.ids.replace(',', '.')));
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Índice IDS',
+                        data: idsData,
+                        backgroundColor: idsData.map(val => val <= 0.3 ? '#27ae60' : val <= 0.6 ? '#f39c12' : '#e74c3c'),
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 45
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Gráfico Atendidos M&T Loog
+        function criarGraficoAtendidos() {
+            const ctx = document.getElementById('atendidosChart').getContext('2d');
+            const atendidos = estabelecimentos.reduce((acc, est) => {
+                const status = est.atendida === 'SIM' ? 'Atendido' : 'Não Atendido/Indefinido';
+                acc[status] = (acc[status] || 0) + 1;
+                return acc;
+            }, {});
+
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(atendidos),
+                    datasets: [{
+                        data: Object.values(atendidos),
+                        backgroundColor: ['#27ae60', '#95a5a6'],
+                        borderWidth: 3,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Inicializar página
+        document.addEventListener('DOMContentLoaded', function() {
+            preencherTabela();
+            criarGraficoVolumeMottu();
+            criarGraficoComparativo();
+            criarGraficoIDS();
+            criarGraficoAtendidos();
+        });
+    </script>
+</body>
+</html>
